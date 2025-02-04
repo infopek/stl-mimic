@@ -39,9 +39,11 @@ TEST(VectorTests, VectorPopTest) {
 
     vec.pop();
 
+    EXPECT_EQ(vec.length(), 2);
+
     const int* data2 = vec.data();
     EXPECT_EQ(data1[0], 6);
     EXPECT_EQ(data1[1], 7);
     EXPECT_THAT([]() {throw std::runtime_error("Index out of bounds"); },
-        Throws<std::runtime_error>());
+        testing::Throws<std::runtime_error>());
 }

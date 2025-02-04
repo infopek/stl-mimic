@@ -1,15 +1,20 @@
 if(BUILD_TESTING)
-    add_executable(Test src/vector_tests.cpp)
-
     find_package(Core REQUIRED)
+
+    include(GoogleTest)
+
+    add_executable(Test src/vector_tests.cpp)
 
     target_link_libraries(
         Test
             PUBLIC
                 Core::Core
             PRIVATE
-                GTest::gtest_main)
+                GTest::gtest
+                GTest::gtest_main
+                GTest::gmock
+                GTest::gmock_main
+                )
 
-    include(GoogleTest)
     gtest_discover_tests(Test)
 endif()

@@ -19,7 +19,8 @@ include(cmake/update_submodules.cmake)
 include(${CMAKE_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake)
 
 # Enable testing
-include(CTest)
+enable_testing()
+include(GoogleTest)
 
 # Before macro, add external dependencies
 add_subdirectory(external)
