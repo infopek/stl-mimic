@@ -2,26 +2,30 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <vector>
+
 
 int main() {
     try {
         std::cout << "Dummy\n";
-        core::Vector vec{};
-        vec.add(3);
-        vec.add(2);
-        vec.add(1);
+        core::Vector<int> vec{};
+        vec.pushBack(3);
+        vec.pushBack(2);
+        vec.pushBack(1);
 
-        for (size_t i = 0; i < 3; i++) {
-            std::cout << " " << vec[i];
+        vec.popBack();
+
+        for (auto it = vec.begin(); it != vec.end(); ++it) {
+            int item = *it;
+            std::cout << item;
         }
 
-        vec.pop();
-
-        for (size_t i = 0; i < 3; i++) {
-            std::cout << " " << vec[i];
+        for (auto n : vec) {
+            std::cout << " " << n;
         }
     }
     catch (const std::exception& ex) {
         std::cerr << "Exception occurred: " << ex.what();
     }
+
 }
