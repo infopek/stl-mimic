@@ -1,9 +1,13 @@
 #pragma once
 
+#include <initializer_list> 
 #include <iterator> // random_access_iterator_tag
 #include <memory> // allocator
 #include <stddef.h> // size_t
 #include <stdexcept>
+
+#include <iostream>
+
 
 namespace core {
     template <class T, class A = std::allocator<T>>
@@ -131,6 +135,11 @@ namespace core {
         {
             reallocate(2);
         }
+        Vector(std::initializer_list<T> list)
+            : m_length{ list.size() }, m_capacity{ list.size() } {
+            m_data = new T[m_capacity];
+            std::copy(list.begin(), list.end(), m_data);
+        }
         Vector(size_t length)
             : m_capacity{ length }, m_length{ length } {
             m_data = new T[length];
@@ -226,6 +235,17 @@ namespace core {
             --m_length;
         }
         void insert(Iterator at, const T& item) {
+            size_t idx = at - begin();  // pointer specified may become invalid after reallocation, do it before
+            if (m_length >= m_capacity) {
+                reallocate(m_capacity * 2);
+            }
+
+            for (size_t i = m_length; i > idx; --i) {
+                m_data[i] = m_data[i - 1];
+            }
+
+            m_data[idx] = item;
+            ++m_length;
         }
 
         void reserve(size_t newCapacity) {

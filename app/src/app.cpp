@@ -8,17 +8,9 @@
 int main() {
     try {
         std::cout << "Dummy\n";
-        core::Vector<int> vec{};
-        vec.pushBack(3);
-        vec.pushBack(2);
-        vec.pushBack(1);
+        core::Vector<int> vec{ 1, 2, 3, 5, 6, 7 };
 
-        vec.popBack();
-
-        for (auto it = vec.begin(); it != vec.end(); ++it) {
-            int item = *it;
-            std::cout << item;
-        }
+        vec.insert(vec.begin() + 2, 12);
 
         for (auto n : vec) {
             std::cout << " " << n;

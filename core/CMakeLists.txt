@@ -6,8 +6,8 @@ project(Core
     LANGUAGES CXX)  
 
 add_library(Core 
-    src/vector.cpp
-    src/randomass.cpp)
+    include/example_iterator.h
+    src/vector.cpp) 
 add_library(Core::Core ALIAS Core)
 
 target_include_directories(
