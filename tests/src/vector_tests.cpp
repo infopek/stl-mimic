@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-TEST(VectorTests, VectorAddTest) {
+TEST(VectorTests, PushBackTest) {
     core::Vector<int> vec{};
 
     // Initialized with correct length & capacity
@@ -25,9 +25,8 @@ TEST(VectorTests, VectorAddTest) {
     EXPECT_EQ(data[2], 8);
 }
 
-TEST(VectorTests, VectorPopBackTest) {
+TEST(VectorTests, PopBackTest) {
     core::Vector<int> vec{};
-
     vec.pushBack(6);
     vec.pushBack(7);
     vec.pushBack(8);
@@ -42,9 +41,8 @@ TEST(VectorTests, VectorPopBackTest) {
         testing::Throws<std::runtime_error>());
 }
 
-TEST(VectorTests, VectorPopFrontTest) {
+TEST(VectorTests, PopFrontTest) {
     core::Vector<int> vec{};
-
     vec.pushBack(6);
     vec.pushBack(7);
     vec.pushBack(8);
@@ -61,7 +59,6 @@ TEST(VectorTests, VectorPopFrontTest) {
 
 TEST(VectorTests, IteratorTest) {
     core::Vector<int> vec{};
-
     vec.pushBack(1);
     vec.pushBack(4);
     vec.pushBack(6);
@@ -75,5 +72,28 @@ TEST(VectorTests, IteratorTest) {
     for (auto n : vec) {
         ASSERT_EQ(n, vec[i]);
         ++i;
+    }
+}
+
+TEST(VectorTests, InsertTest) {
+    core::Vector<int> vec{ 1, 3, 4, 5 };
+
+    vec.insert(vec.begin() + 1, 8);
+    std::cout << vec[1];
+    std::cout << vec[2];
+    std::cout << vec[3];
+
+    int expected[] = { 1, 8, 3, 4, 5 };
+    for (size_t i = 0; i < 5; ++i) {
+        ASSERT_EQ(vec.at(i), expected[i]);
+    }
+}
+
+TEST(VectorTests, InitListTest) {
+    core::Vector<double> vec{ 2, 4, 5, 6, 7 };
+
+    int expected[] = { 2, 4, 5, 6, 7 };
+    for (size_t i = 0; i < vec.length(); ++i) {
+        ASSERT_EQ(vec.at(i), expected[i]);
     }
 }
