@@ -30,10 +30,10 @@ protected:
 
     }
 
-    SLinkedList<int> empty_list;
-    SLinkedList<int> l1;
-    SLinkedList<float> l2;
-    SLinkedList<std::string> l3;
+    core::SLinkedList<int> empty_list;
+    core::SLinkedList<int> l1;
+    core::SLinkedList<float> l2;
+    core::SLinkedList<std::string> l3;
 };
 
 TEST_F(SLinkedListTest, PushFrontWorks) {
@@ -52,6 +52,7 @@ TEST_F(SLinkedListTest, InsertWorks) {
     std::string expected[] = { "moment", "tester", "um" };
     for (size_t i = 0; i < 3; ++i) {
         EXPECT_EQ(l3.front(), expected[i]);
+        l3.popFront();
     }
 }
 
