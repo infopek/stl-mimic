@@ -8,7 +8,8 @@ project(Core
 add_library(Core 
     include/example_iterator.h
     src/vector.cpp
-    src/linked_list.cpp)
+    src/linked_list.cpp
+    src/stack.cpp)
 add_library(Core::Core ALIAS Core)
 
 target_include_directories(

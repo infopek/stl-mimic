@@ -111,8 +111,3 @@ TEST_F(SLinkedListTest, EmptyWorks) {
     EXPECT_FALSE(l2.empty());
     EXPECT_FALSE(l3.empty());
 }
-
-int main(int argc, char** argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

@@ -5,7 +5,8 @@ if(BUILD_TESTING)
 
     add_executable(Test 
         src/vector_tests.cpp
-        src/linked_list_tests.cpp)
+        src/linked_list_tests.cpp
+        src/stack_tests.cpp)
 
     target_link_libraries(
         Test
