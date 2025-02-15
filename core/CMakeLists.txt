@@ -10,7 +10,8 @@ add_library(Core
     src/vector.cpp
     src/linked_list.cpp
     src/stack.cpp
-    src/tree.cpp)
+    src/tree.cpp
+    src/hash_table.cpp)
 add_library(Core::Core ALIAS Core)
 
 target_include_directories(

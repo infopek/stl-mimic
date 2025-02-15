@@ -27,6 +27,48 @@ namespace core {
     template <typename T>
     class SLinkedList {
     public:
+        class Iterator {
+            using ValueType = T;
+            using Reference = T&;
+        public:
+            Iterator()
+                : m_ptr(nullptr) {
+            }
+            Iterator(SNode<ValueType>* ptr)
+                : m_ptr(ptr) {
+            }
+
+            Reference operator*() const { return m_ptr->val; }
+
+            Iterator& operator++() {
+                if (m_ptr) {
+                    m_ptr = m_ptr->next;
+                }
+                return *this;
+            }
+            Iterator operator++(int) {
+                Iterator temp = *this;
+                ++*this;
+                return temp;
+            }
+
+            bool operator==(const Iterator& other) {
+                return m_ptr == other.m_ptr;
+            }
+            bool operator!=(const Iterator& other) {
+                return !(*this == other);
+            }
+        private:
+            SNode<ValueType>* m_ptr;
+        };
+
+        Iterator begin() {
+            return Iterator(m_head);
+        }
+        Iterator end() {
+            return Iterator(nullptr);
+        }
+    public:
         SLinkedList()
             : m_head(nullptr) {
         }
@@ -148,6 +190,25 @@ namespace core {
             return curr->val;
         }
 
+        T& front() {
+            if (!m_head) {
+                throw std::logic_error("The list is empty");
+            }
+            return m_head->val;
+        }
+        T& back() {
+            if (!m_head) {
+                throw std::logic_error("The list is empty");
+            }
+
+            SNode<T>* curr = m_head;
+            while (curr->next) {
+                curr = curr->next;
+            }
+
+            return curr->val;
+        }
+
         bool find(const T& item) const {
             SNode<T>* curr = m_head;
             while (curr) {
@@ -160,6 +221,14 @@ namespace core {
         }
         bool empty() const {
             return !m_head;
+        }
+
+        void clear() {
+            while (m_head) {
+                SNode<T>* next = m_head->next;
+                delete m_head;
+                m_head = next;
+            }
         }
 
         SNode<T>* m_head;
