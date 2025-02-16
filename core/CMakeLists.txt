@@ -11,7 +11,8 @@ add_library(Core
     src/linked_list.cpp
     src/stack.cpp
     src/tree.cpp
-    src/hash_table.cpp)
+    src/hash_table.cpp
+    src/priority_queue.cpp)
 add_library(Core::Core ALIAS Core)
 
 target_include_directories(
