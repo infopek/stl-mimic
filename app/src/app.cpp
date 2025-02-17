@@ -6,24 +6,20 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 int main() {
     try {
-        core::PQueue<int, int> pq{};
-        pq.insert(2, 2);
-        pq.insert(6, 6);
-        pq.insert(2, 2);
-        pq.insert(11, 11);
-        pq.insert(8, 8);
-        pq.insert(4, 4);
-        pq.insert(17, 17);
-        pq.insert(3, 3);
-        pq.insert(10, 10);
-        pq.insert(9, 9);
-        pq.insert(5, 5);
-
-        std::cout << pq.peek();
+        core::PQueue<int, std::string> pq{
+          {5, "Hali"},
+          {1, "Holi"},
+          {8, "Heli"},
+          {9, "Hili"},
+          {3, "Huli"},
+          {2, "HHH"},
+        };
+        pq.print();
     }
     catch (const std::exception& ex) {
         std::cerr << "Exception occurred: " << ex.what();
