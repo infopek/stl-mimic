@@ -38,16 +38,14 @@ namespace core {
             return *this;
         }
         HeapNode& operator=(HeapNode&& other) noexcept {
-            if (this != &other) {
-                priority = other.priority;
-                value = other.value;
-            }
+            priority = std::move(other.priority);
+            value = std::move(other.value);
             return *this;
         }
         ~HeapNode() = default;
     };
 
-    template <typename P, typename V>
+    template <typename P, typename V, typename Comp = std::less<P>>
     class PQueue {
     private:
         using Node = HeapNode<P, V>;
@@ -59,24 +57,24 @@ namespace core {
         }
         PQueue(std::initializer_list<std::pair<P, V>> list)
             : m_size{ list.size() }
-            , m_capacity{ m_size + m_size / 3 } {
+            , m_capacity{ m_size * 2 } {
             m_heap = static_cast<Node*>(::operator new(sizeof(Node) * m_capacity));
-            core::Vector<std::pair<P, V>> temp_list(list);
 
-            std::size_t index = 0;
-            for (auto&& [priority, value] : temp_list) {
-                new (&m_heap[index]) Node(std::move(priority), std::move(value));
-                ++index;
+            size_t i = 0;
+            for (const auto& [priority, value] : list) {
+                new (&m_heap[i]) Node(priority, value);
+                ++i;
             }
 
-            int startIdx = m_size / 2 - 1;
-            for (int i = startIdx; i >= 0; --i) {
+            for (int i = m_size / 2 - 1; i >= 0; --i) {
                 bubbleDown(i);
             }
         }
+        PQueue(const PQueue<P, V, Comp>&) = delete;
+        PQueue& operator=(const PQueue<P, V, Comp>&) = delete;
         ~PQueue() {
             clear();
-            ::operator delete(m_heap, m_capacity * sizeof(Node));
+            ::operator delete(m_heap);
         }
 
         void insert(const P& priority, const V& value) {
@@ -84,7 +82,7 @@ namespace core {
                 reallocate(m_capacity + m_capacity / 2);
             }
 
-            m_heap[m_size] = Node(priority, value);
+            new(&m_heap[m_size]) Node(priority, value);
             ++m_size;
             if (m_size > 1) {
                 bubbleUp();
@@ -127,7 +125,7 @@ namespace core {
                 m_heap[i].~Node();
             }
 
-            ::operator delete(m_heap, m_capacity * sizeof(Node));
+            ::operator delete(m_heap);
             m_heap = newHeap;
             m_capacity = newCapacity;
         }
@@ -136,45 +134,48 @@ namespace core {
         void bubbleUp() {
             size_t idx = m_size - 1;
             size_t parentIdx = (idx - 1) / 2;
-            while (idx != 0
-                && m_heap[idx].priority < m_heap[parentIdx].priority) {
+            while (idx != 0 && m_comp(m_heap[idx].priority, m_heap[parentIdx].priority)) {
                 std::swap(m_heap[idx], m_heap[parentIdx]);
                 idx = parentIdx;
                 parentIdx = (idx - 1) / 2;
             }
         }
 
-        void bubbleDown(size_t startIdx) {
-            size_t idx = startIdx;
-            size_t child1Idx = idx * 2 + 1;
-            size_t child2Idx = idx * 2 + 2;
+        void bubbleDown(size_t idx) {
             while (true) {
-                size_t minChildIdx = 0;
-                if (child1Idx < m_size && child2Idx < m_size
-                    && (m_heap[child1Idx].priority < m_heap[idx].priority
-                        || m_heap[child2Idx].priority < m_heap[idx].priority)
-                    ) {
-                    // In case of same priority, choose left child 
-                    minChildIdx = m_heap[child1Idx].priority <= m_heap[child2Idx].priority
-                        ? child1Idx
-                        : child2Idx;
+                size_t smallest = idx; // or biggest, depending on comp
+                size_t left = idx * 2 + 1;
+                size_t right = idx * 2 + 2;
+                // if (child1Idx < m_size && child2Idx < m_size
+                //     && (m_heap[child1Idx].priority < m_heap[idx].priority
+                //         || m_heap[child2Idx].priority < m_heap[idx].priority)
+                //     ) {
+                //     // In case of same priority, choose right child 
+                //     minChildIdx = m_comp(m_heap[child1Idx].priority, m_heap[child2Idx].priority)
+                //         ? child1Idx
+                //         : child2Idx;
+                // }
+                // else if (child1Idx < m_size && m_comp(m_heap[child1Idx].priority, m_heap[idx].priority)) {
+                //     minChildIdx = child1Idx;
+                // }
+                // else if (child2Idx < m_size && m_comp(m_heap[child2Idx].priority, m_heap[idx].priority)) {
+                //     minChildIdx = child2Idx;
+                // }
+                // else {
+                //     break;
+                // }
+                if (left < m_size && m_comp(m_heap[left].priority, m_heap[idx].priority)) {
+                    smallest = left;
                 }
-                else if (child1Idx < m_size && m_heap[child1Idx].priority < m_heap[idx].priority) {
-                    minChildIdx = child1Idx;
+                if (right < m_size && m_comp(m_heap[right].priority, m_heap[smallest].priority)) {
+                    smallest = right;
                 }
-                else if (child2Idx < m_size && m_heap[child2Idx].priority < m_heap[idx].priority) {
-                    minChildIdx = child2Idx;
-                }
-                else {
-                    break;
+                if (smallest == idx) {
+                    return;
                 }
 
-                std::cout << idx << " " << child1Idx << " " << child2Idx << " " << minChildIdx << '\n';
-
-                std::swap(m_heap[idx], m_heap[minChildIdx]);
-                idx = minChildIdx;
-                child1Idx = idx * 2 + 1;
-                child2Idx = idx * 2 + 2;
+                std::swap(m_heap[idx], m_heap[smallest]);
+                idx = smallest;
             }
         }
 
@@ -184,5 +185,6 @@ namespace core {
         Node* m_heap;
         size_t m_size{};
         size_t m_capacity{};
+        Comp m_comp{};
     };
 }
