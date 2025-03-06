@@ -14,12 +14,12 @@ namespace core {
             : val(T()), next(nullptr)
         {
         }
-        SNode(T val)
-            : val(val), next(nullptr)
+        SNode(const T& val_)
+            : val(val_), next(nullptr)
         {
         }
-        SNode(T val, SNode* n)
-            : val(val), next(n)
+        SNode(const T& val_, SNode<T>* n)
+            : val(val_), next(n)
         {
         }
     };
@@ -34,8 +34,18 @@ namespace core {
             Iterator()
                 : m_ptr(nullptr) {
             }
+            Iterator(const Iterator& other)
+                : m_ptr(other.m_ptr) {
+            }
             Iterator(SNode<ValueType>* ptr)
                 : m_ptr(ptr) {
+            }
+
+            Iterator& operator=(const Iterator& other) {
+                if (*this != other) {
+                    m_ptr = other.m_ptr;
+                }
+                return *this;
             }
 
             Reference operator*() const { return m_ptr->val; }
@@ -52,14 +62,64 @@ namespace core {
                 return temp;
             }
 
-            bool operator==(const Iterator& other) {
+            bool operator==(const Iterator& other) const {
                 return m_ptr == other.m_ptr;
             }
-            bool operator!=(const Iterator& other) {
+            bool operator!=(const Iterator& other) const {
                 return !(*this == other);
             }
         private:
             SNode<ValueType>* m_ptr;
+        };
+
+        class ConstIterator {
+            using ValueType = T;
+            using Reference = T&;
+        public:
+            ConstIterator()
+                : m_ptr(nullptr) {
+            }
+            ConstIterator(const ConstIterator& other)
+                : m_ptr(other.m_ptr) {
+            }
+            ConstIterator(const Iterator& other)
+                : m_ptr(other.m_ptr) {
+            }
+            ConstIterator(SNode<ValueType>* ptr)
+                : m_ptr(ptr) {
+            }
+
+            ConstIterator& operator=(const ConstIterator& other) {
+                if (*this != other) {
+                    m_ptr = other.m_ptr;
+                }
+                return *this;
+            }
+
+            Reference operator*() const { return m_ptr->val; }
+
+            ConstIterator operator++() {
+                if (m_ptr) {
+                    m_ptr = m_ptr->next;
+                }
+                return *this;
+            }
+            ConstIterator operator++(int) {
+                ConstIterator temp = *this;
+                ++*this;
+                return temp;
+            }
+
+            bool operator==(const ConstIterator& other) const {
+                return m_ptr == other.m_ptr;
+            }
+            bool operator!=(const ConstIterator& other) const {
+                return !(*this == other);
+            }
+        private:
+            SNode<ValueType>* m_ptr;
+
+            friend class Iterator;
         };
 
         Iterator begin() {
@@ -68,14 +128,65 @@ namespace core {
         Iterator end() {
             return Iterator(nullptr);
         }
+        ConstIterator begin() const {
+            return ConstIterator(m_head);
+        }
+        ConstIterator end() const {
+            return ConstIterator(nullptr);
+        }
+
+        ConstIterator cbegin() const {
+            return ConstIterator(m_head);
+        }
+        ConstIterator cend() const {
+            return ConstIterator(nullptr);
+        }
+
     public:
         SLinkedList()
             : m_head(nullptr) {
         }
         SLinkedList(std::initializer_list<T> list) {
         }
-        SLinkedList(const SLinkedList<T>&) = delete;
-        SLinkedList(SLinkedList<T>&&) noexcept = delete;
+        SLinkedList(const SLinkedList<T>& other)
+            : m_head{ nullptr } {
+            SNode<T>* curr = other.m_head;
+            while (curr != nullptr) {
+                pushBack(curr->val);
+                curr = curr->next;
+            }
+        }
+        SLinkedList(SLinkedList<T>&& other) noexcept
+            : m_head{ other.m_head } {
+            other.m_head = nullptr;
+        }
+        SLinkedList<T>& operator=(const SLinkedList<T>& other) {
+            if (this == &other) {
+                return *this;
+            }
+
+            clear();
+
+            SNode<T>* curr = other.m_head;
+            while (curr != nullptr) {
+                pushBack(curr->val);
+                curr = curr->next;
+            }
+
+            return *this;
+        }
+        SLinkedList<T>& operator=(SLinkedList<T>&& other) noexcept {
+            if (this == &other) {
+                return *this;
+            }
+
+            clear();
+
+            m_head = other.m_head;
+            other.m_head = nullptr;
+
+            return *this;
+        }
         ~SLinkedList() {
             while (m_head) {
                 SNode<T>* temp = m_head;

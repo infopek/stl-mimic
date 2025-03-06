@@ -136,17 +136,17 @@ namespace core {
             reallocate(2);
         }
         Vector(std::initializer_list<T> list)
-            : m_length{ list.size() }, m_capacity{ list.size() } {
-            m_data = new T[m_capacity];
+            : m_length{ list.size() }, m_capacity{ list.size() + list.size() / 2 } {
+            m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
             std::copy(list.begin(), list.end(), m_data);
         }
         Vector(size_t length)
             : m_capacity{ length }, m_length{ length } {
-            m_data = new T[length];
+            m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
         }
         Vector(const Vector& other)
             : m_capacity{ other.m_capacity }, m_length{ other.m_length } {
-            m_data = new T[m_length];
+            m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
             for (size_t i = 0; i < m_length; i++) {
                 m_data[i] = other.m_data[i];
             }
@@ -159,7 +159,10 @@ namespace core {
             other.m_data = nullptr;
         }
         ~Vector() {
-            delete[] m_data;
+            for (size_t i = 0; i < m_length; ++i) {
+                m_data[i].~T();
+            }
+            free(m_data);
         }
 
         // ---------------- MODIFIERS ---------------- //
@@ -218,7 +221,6 @@ namespace core {
                 throw std::runtime_error("The vector is empty");
             }
 
-            // TODO: fix this so that the vector actually shrinks
             m_data[m_length - 1] = T();
             --m_length;
         }
@@ -234,7 +236,7 @@ namespace core {
             m_data[m_length - 1] = T();
             --m_length;
         }
-        void insert(Iterator at, const T& item) {
+        void insert(const Iterator& at, const T& item) {
             size_t idx = at - begin();  // pointer specified may become invalid after reallocation, do it before
             if (m_length >= m_capacity) {
                 reallocate(m_capacity * 2);
@@ -339,18 +341,19 @@ namespace core {
 
     private:
         void reallocate(size_t newCapacity) {
-            T* newData = new T[newCapacity];
+            T* newData = static_cast<T*>(malloc(m_capacity * sizeof(T)));
             for (size_t i = 0; i < m_length; ++i) {
-                newData[i] = std::move(m_data[i]);
+                new(&newData[i]) T(std::move(m_data[i]));
+                m_data[i].~T();
             }
 
-            delete[] m_data;
+            free(m_data);
             m_data = newData;
             m_capacity = newCapacity;
         }
 
     private:
-        T* m_data;
+        T* m_data{};
         size_t m_capacity{};
         size_t m_length{};
     };
