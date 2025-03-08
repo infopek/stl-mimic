@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector.h>
+#include <hash_table.h>
 
 #include <memory>
 #include <iostream>
@@ -55,7 +56,7 @@ namespace core {
             : m_heap{ nullptr }, m_size{ 0 }, m_capacity{ 0 } {
             reallocate(c_initCapacity);
         }
-        PQueue(std::initializer_list<std::pair<P, V>> list)
+        PQueue(std::initializer_list<KVPair<P, V>> list)
             : m_size{ list.size() }
             , m_capacity{ m_size * 2 } {
             m_heap = static_cast<Node*>(::operator new(sizeof(Node) * m_capacity));
@@ -89,11 +90,11 @@ namespace core {
             }
         }
         void pop() {
-            if (m_size == 0) {
+            if (empty()) {
                 throw std::out_of_range("The queue is empty");
             }
 
-            m_heap[0] = std::move(m_heap[m_size - 1]);
+            new (&m_heap[0]) Node(std::move(m_heap[m_size - 1]));
             --m_size;
             if (m_size > 1) {
                 bubbleDown(0);
@@ -117,15 +118,23 @@ namespace core {
             }
         }
 
+        bool empty() const {
+            return m_size == 0;
+        }
+
+        inline constexpr size_t size() const {
+            return m_size;
+        }
+
     private:
         void reallocate(size_t newCapacity) {
-            Node* newHeap = (Node*)::operator new(newCapacity * sizeof(Node));
+            Node* newHeap = static_cast<Node*>(malloc(newCapacity * sizeof(Node)));
             for (size_t i = 0; i < m_size; ++i) {
                 new(&newHeap[i]) Node(std::move(m_heap[i]));
                 m_heap[i].~Node();
             }
 
-            ::operator delete(m_heap);
+            free(m_heap);
             m_heap = newHeap;
             m_capacity = newCapacity;
         }
@@ -146,24 +155,6 @@ namespace core {
                 size_t smallest = idx; // or biggest, depending on comp
                 size_t left = idx * 2 + 1;
                 size_t right = idx * 2 + 2;
-                // if (child1Idx < m_size && child2Idx < m_size
-                //     && (m_heap[child1Idx].priority < m_heap[idx].priority
-                //         || m_heap[child2Idx].priority < m_heap[idx].priority)
-                //     ) {
-                //     // In case of same priority, choose right child 
-                //     minChildIdx = m_comp(m_heap[child1Idx].priority, m_heap[child2Idx].priority)
-                //         ? child1Idx
-                //         : child2Idx;
-                // }
-                // else if (child1Idx < m_size && m_comp(m_heap[child1Idx].priority, m_heap[idx].priority)) {
-                //     minChildIdx = child1Idx;
-                // }
-                // else if (child2Idx < m_size && m_comp(m_heap[child2Idx].priority, m_heap[idx].priority)) {
-                //     minChildIdx = child2Idx;
-                // }
-                // else {
-                //     break;
-                // }
                 if (left < m_size && m_comp(m_heap[left].priority, m_heap[idx].priority)) {
                     smallest = left;
                 }
@@ -178,6 +169,7 @@ namespace core {
                 idx = smallest;
             }
         }
+
 
     private:
         constexpr static size_t c_initCapacity = 3;
