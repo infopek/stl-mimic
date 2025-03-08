@@ -138,17 +138,24 @@ namespace core {
         Vector(std::initializer_list<T> list)
             : m_length{ list.size() }, m_capacity{ list.size() + list.size() / 2 } {
             m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
-            std::copy(list.begin(), list.end(), m_data);
+            size_t i = 0;
+            for (const auto& item : list) {
+                new (&m_data[i]) T(item);
+                ++i;
+            }
         }
         Vector(size_t length)
             : m_capacity{ length }, m_length{ length } {
             m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
+            for (size_t i = 0; i < m_length; ++i) {
+                new (&m_data[i]) T();
+            }
         }
         Vector(const Vector& other)
             : m_capacity{ other.m_capacity }, m_length{ other.m_length } {
             m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
             for (size_t i = 0; i < m_length; i++) {
-                m_data[i] = other.m_data[i];
+                new (&m_data[i]) T(other.m_data);
             }
 
         }
@@ -171,7 +178,7 @@ namespace core {
                 reallocate(m_capacity * 2);
             }
 
-            m_data[m_length] = item;
+            new (&m_data[m_length]) T(item);
             ++m_length;
         }
         void pushBack(T&& item) {
@@ -179,7 +186,7 @@ namespace core {
                 reallocate(m_capacity * 2);
             }
 
-            m_data[m_length] = std::move(item);
+            new (&m_data[m_length]) T(std::move(item));
             ++m_length;
         }
         void pushFront(const T& item) {
@@ -187,7 +194,12 @@ namespace core {
                 reallocate(m_capacity * 2);
             }
 
-            m_data[m_length] = item;
+            for (size_t i = m_length; i > 0; --i) {
+                new (&m_data[i]) T(std::move(m_data[i - 1]));
+                m_data[i - 1].~T();
+            }
+
+            new (&m_data[0]) T(item);
             ++m_length;
         }
         void pushFront(T&& item) {
@@ -341,7 +353,7 @@ namespace core {
 
     private:
         void reallocate(size_t newCapacity) {
-            T* newData = static_cast<T*>(malloc(m_capacity * sizeof(T)));
+            T* newData = static_cast<T*>(malloc(newCapacity * sizeof(T)));
             for (size_t i = 0; i < m_length; ++i) {
                 new(&newData[i]) T(std::move(m_data[i]));
                 m_data[i].~T();
