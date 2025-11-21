@@ -76,9 +76,17 @@ struct HuffmanNode {
     }
 };
 
-std::string huffmanEncode(const std::string& str) {
+struct EncodedHuffman {
+    std::string encodedMessage{};
+    HuffmanNode* root;
+};
+
+EncodedHuffman huffmanEncode(const std::string& str) {
     if (str.empty()) {
-        return "";
+        return EncodedHuffman {
+            .encodedMessage = "",
+            .root = nullptr
+        };
     }
 
     core::HashTable<char, size_t> freq{};
@@ -131,20 +139,22 @@ std::string huffmanEncode(const std::string& str) {
         encodedLength += codes[static_cast<size_t>(c)].length();
     }
 
-    std::string res{};
-    res.reserve(encodedLength);
+    std::string encoded{};
+    encoded.reserve(encodedLength);
     for (const auto c : str) {
-        res += codes[static_cast<size_t>(c)] + " ";
+        encoded += codes[static_cast<size_t>(c)] + " ";
     }
 
-    return res;
+    return EncodedHuffman {
+        .encodedMessage = encoded,
+        .root = root
+    };
 }
 
 int main() {
     try {
-        std::string str{ "BCCABBDDAECCBBAEDDCC" };
-        std::string res = huffmanEncode(str);
-        std::cout << res;
+        std::string str = "BCCABBDDAECCBBAEDDCC";
+        EncodedHuffman res = huffmanEncode(str);
     }
     catch (const std::exception& ex) {
         std::cerr << "Exception occurred: " << ex.what();
